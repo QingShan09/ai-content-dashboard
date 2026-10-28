@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="theme-color" content="#fbfbfe" />
+<title>AI 内容号对标看板 · 国风与叙事</title>
+<style>
+  :root{
+    --bg:#fbfbfe;--card:#fff;--line:#eceef4;
+    --ink:#111827;--ink-2:#4b5563;--ink-3:#9aa1ae;--brand:#e11d48;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    line-height:1.65;-webkit-font-smoothing:antialiased;letter-spacing:.005em;
+    overflow-x:hidden;-webkit-tap-highlight-color:transparent;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(620px 420px at 4% -4%, rgba(16,185,129,.20), transparent 60%),
+      radial-gradient(700px 460px at 100% -8%, rgba(225,29,72,.16), transparent 58%),
+      radial-gradient(680px 520px at 60% 108%, rgba(124,58,237,.13), transparent 62%),
+      radial-gradient(420px 320px at 30% 60%, rgba(234,88,12,.06), transparent 65%);
+  }
+  .wrap{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:46px 24px 64px}
+
+  .badge{
+    display:inline-flex;align-items:center;gap:8px;padding:6px 13px;border-radius:999px;
+    background:#fff;border:1px solid var(--line);box-shadow:0 2px 10px -4px rgba(17,24,39,.12);
+    font-size:11px;letter-spacing:.14em;color:#6b7280;text-transform:uppercase;font-weight:600;
+  }
+  .badge i{width:7px;height:7px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);display:block;flex:0 0 auto}
+  h1{margin-top:16px;font-size:clamp(28px,6.2vw,52px);font-weight:800;line-height:1.14;letter-spacing:-.025em}
+  .grad{background:linear-gradient(96deg,#e11d48 8%,#7c3aed 52%,#2563eb 96%);
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{margin-top:14px;max-width:680px;font-size:14px;color:var(--ink-2);line-height:1.7}
+
+  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:26px}
+  .stat{position:relative;overflow:hidden;padding:13px 15px;border-radius:14px;background:#fff;
+    border:1px solid var(--line);box-shadow:0 2px 8px -5px rgba(17,24,39,.10)}
+  .stat::before{content:"";position:absolute;left:0;top:0;width:100%;height:3px;
+    background:linear-gradient(90deg,var(--sc),transparent 92%)}
+  .stat b{display:block;font-size:24px;font-weight:800;line-height:1.15;letter-spacing:-.02em;color:var(--sc)}
+  .stat span{display:block;margin-top:3px;font-size:11px;color:var(--ink-3);font-weight:500}
+
+  .toolbar{margin:28px 0 0}
+  .bar-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .bar-title{font-size:15px;font-weight:800;letter-spacing:-.01em}
+  .bar-count{font-size:12px;color:var(--ink-3)}
+  .bar-count b{color:var(--brand);font-weight:800}
+
+  .filterbar{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{
+    appearance:none;cursor:pointer;font:inherit;font-weight:600;padding:7px 14px;border-radius:999px;
+    background:#fff;color:var(--ink-2);border:1px solid var(--line);font-size:12.5px;
+    transition:all .18s ease;display:inline-flex;align-items:center;gap:7px;
+    box-shadow:0 1px 3px rgba(17,24,39,.05);
+  }
+  .chip:hover{border-color:#d7dbe4;color:var(--ink)}
+  .chip[aria-pressed="true"]{color:#fff;border-color:transparent;
+    background:linear-gradient(135deg,var(--sw),var(--sw-d));
+    box-shadow:0 8px 18px -8px var(--sw),0 0 0 1px rgba(255,255,255,.16) inset}
+  .chip .n{font-size:10.5px;opacity:.62;font-weight:700}
+  .chip[aria-pressed="true"] .n{opacity:.85}
+  .chip .sw{width:8px;height:8px;border-radius:50%;background:var(--sw);flex:0 0 auto}
+  .chip[aria-pressed="true"] .sw{background:rgba(255,255,255,.85)}
+
+  .distbar{display:flex;height:6px;border-radius:99px;overflow:hidden;margin-top:16px;background:#f1f3f8}
+  .distbar span{display:block;height:100%}
+
+  .hotline{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:14px;font-size:11.5px;color:var(--ink-3)}
+  .hotline .k{font-weight:800;letter-spacing:.12em;font-size:9.5px;color:#b0b7c3}
+  .hot{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:7px;
+    background:#fff;border:1px solid var(--line);color:var(--ink-2);font-weight:500}
+  .hot b{color:var(--brand);font-weight:800}
+
+  .grid{margin-top:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px}
+  .card{
+    position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);
+    border-radius:20px;padding:20px 20px 16px;display:flex;flex-direction:column;
+    box-shadow:0 1px 2px rgba(17,24,39,.04),0 10px 26px -22px rgba(17,24,39,.25);
+    transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s ease,border-color .22s ease;
+  }
+  .card::after{content:"";position:absolute;left:0;right:0;top:0;height:3px;
+    background:linear-gradient(90deg,var(--tc),var(--tc-l));opacity:.9}
+  .card:hover{transform:translateY(-4px);border-color:var(--tc-b);
+    box-shadow:0 24px 44px -26px var(--tc-s),0 2px 8px rgba(17,24,39,.05)}
+  .card[hidden]{display:none}
+
+  .top{display:flex;gap:13px;align-items:flex-start}
+  .avatar{flex:0 0 auto;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;
+    position:relative;font-size:22px;font-weight:800;color:#fff;letter-spacing:-.02em;
+    text-decoration:none;overflow:hidden;background:linear-gradient(140deg,var(--tc),var(--tc-d));
+    box-shadow:0 0 0 2px #fff,0 0 0 3px var(--tc-b),0 8px 18px -8px var(--tc-s)}
+  .avatar img{width:100%;height:100%;object-fit:cover;display:block;position:relative;z-index:2}
+  .avatar span{position:relative;z-index:2;text-shadow:0 1px 2px rgba(0,0,0,.18)}
+
+  .ident{min-width:0;flex:1;padding-top:2px}
+  .name{display:inline-block;font-size:18px;font-weight:800;letter-spacing:-.015em;
+    color:var(--ink);text-decoration:none;line-height:1.25;word-break:break-word}
+  .name:hover{color:var(--tc-d)}
+  .meta{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .tag{font-size:10.5px;font-weight:700;letter-spacing:.02em;padding:3px 9px;border-radius:7px;
+    white-space:nowrap;color:var(--tc-d);background:var(--tc-tint)}
+  .flag{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;color:var(--ink-3);font-weight:500}
+  .dot{width:5px;height:5px;border-radius:50%;display:inline-block}
+  .dot.ok{background:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.14)}
+  .dot.wait{background:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.14)}
+
+  .arrow{flex:0 0 auto;width:28px;height:28px;border-radius:10px;display:grid;place-items:center;
+    text-decoration:none;color:var(--tc);background:var(--tc-tint);font-size:13px;font-weight:700}
+  .arrow.is-search{font-size:11px}
+
+  .desc{margin:14px 0 0;font-size:13px;line-height:1.7;color:var(--ink-2);
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+  .hook{margin-top:14px;padding:11px 13px 11px 14px;border-radius:12px;
+    background:var(--tc-tint);border-left:3px solid var(--tc)}
+  .hook-h{font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--tc-d);opacity:.9;margin-bottom:6px}
+  .hook p{position:relative;padding-left:13px;font-size:12.5px;line-height:1.6;color:#3f4652}
+  .hook p+p{margin-top:4px}
+  .hook p::before{content:"";position:absolute;left:0;top:7px;width:5px;height:5px;border-radius:50%;
+    background:var(--tc);opacity:.55}
+
+  .pills{margin-top:13px;display:flex;flex-wrap:wrap;gap:6px}
+  .pill{font-size:11.5px;line-height:1.5;padding:4px 9px;border-radius:8px;background:#fafbfd;
+    border:1px solid var(--line);color:var(--ink-2);font-weight:500}
+  .pill strong{color:var(--tc-d);font-weight:800;margin-right:3px}
+  .pill.todo{color:var(--ink-3);border-style:dashed}
+
+  .foot{margin-top:auto;padding-top:14px;display:flex;align-items:center;gap:8px;
+    font-size:11px;color:var(--ink-3)}
+  .foot .lab{flex:0 0 auto;font-size:9.5px;font-weight:700;letter-spacing:.14em;color:var(--tc-d);opacity:.75}
+  .aud{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .aud b{font-weight:600;color:var(--ink-2)}
+
+  .empty{grid-column:1/-1;padding:56px 0;text-align:center;color:var(--ink-3);font-size:13px}
+
+  /* ---------- 回到顶部 ---------- */
+  .to-top{
+    position:fixed;right:16px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:9999;
+    height:48px;padding:0 18px 0 15px;border-radius:999px;
+    display:inline-flex;align-items:center;gap:7px;cursor:pointer;
+    background:linear-gradient(135deg,#e11d48,#be123c);color:#fff;border:0;
+    font-family:inherit;font-size:13px;font-weight:600;line-height:1;
+    -webkit-appearance:none;appearance:none;
+    box-shadow:0 14px 28px -10px rgba(225,29,72,.62),0 2px 8px rgba(17,24,39,.16);
+    opacity:0;transform:translateY(12px) scale(.95);pointer-events:none;
+    transition:opacity .24s ease,transform .24s ease,box-shadow .2s ease;
+  }
+  .to-top .ico{font-size:15px;line-height:1;margin-top:-1px}
+  .to-top.show{opacity:1;transform:none;pointer-events:auto}
+  .to-top:hover{box-shadow:0 18px 34px -10px rgba(225,29,72,.75),0 2px 8px rgba(17,24,39,.18)}
+  .to-top:active{transform:scale(.95)}
+
+  /* 微信内置浏览器：底部有工具条 + 安全区，需要抬高 */
+  html.wx .to-top{bottom:calc(96px + env(safe-area-inset-bottom))}
+
+  @media (max-width:680px){
+    .to-top{right:14px;height:46px;padding:0 16px 0 13px;font-size:12.5px}
+  }
+
+  .backlink{
+    display:inline-block;margin-top:14px;padding:6px 14px;border-radius:999px;
+    background:#fff;border:1px solid var(--line);color:var(--brand);
+    font-size:12px;font-weight:600;text-decoration:none;
+  }
+  .backlink:hover{border-color:rgba(225,29,72,.35)}
+
+  footer{margin-top:44px;padding-top:20px;border-top:1px solid var(--line);
+    font-size:11.5px;line-height:1.95;color:var(--ink-3)}
+  footer b{color:var(--ink-2);font-weight:700}
+  footer code{font-size:11px;background:#f3f5f9;padding:1px 5px;border-radius:4px;color:#4b5563}
+
+  /* ---------- 平板 ---------- */
+  @media (max-width:1024px){
+    .wrap{padding:38px 20px 56px}
+    .stats{grid-template-columns:repeat(3,1fr)}
+  }
+  /* ---------- 手机 ---------- */
+  @media (max-width:680px){
+    .wrap{padding:26px 14px 44px}
+    h1{font-size:clamp(26px,8.2vw,34px);letter-spacing:-.02em;margin-top:14px}
+    .sub{font-size:13px;line-height:1.65}
+    .stats{grid-template-columns:repeat(2,1fr);gap:8px;margin-top:20px}
+    .stat{padding:11px 13px;border-radius:12px}
+    .stat b{font-size:20px}
+    .stat span{font-size:10px}
+
+    .toolbar{margin-top:22px}
+    .filterbar{flex-wrap:nowrap;overflow-x:auto;gap:7px;padding-bottom:6px;
+      -webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .filterbar::-webkit-scrollbar{display:none}
+    .chip{flex:0 0 auto;padding:7px 13px;font-size:12.5px}
+
+    .hotline{font-size:11px;gap:6px;margin-top:12px}
+    .hot{padding:3px 8px}
+
+    .grid{grid-template-columns:1fr;gap:12px;margin-top:16px}
+    .card{padding:16px 15px 14px;border-radius:16px}
+    .avatar{width:48px;height:48px;font-size:19px}
+    .top{gap:11px}
+    .name{font-size:16.5px}
+    .arrow{width:34px;height:34px;border-radius:11px;font-size:14px}
+    .arrow.is-search{font-size:12px}
+    .desc{font-size:12.5px;margin-top:12px;-webkit-line-clamp:3}
+    .hook{margin-top:12px;padding:10px 11px 10px 12px}
+    .hook p{font-size:12px;line-height:1.6}
+    .pills{margin-top:11px;gap:5px}
+    .pill{font-size:11px;padding:4px 8px}
+    .foot{font-size:10.5px;padding-top:12px}
+    footer{font-size:11px;margin-top:34px}
+  }
+  @media (max-width:380px){
+    .wrap{padding:22px 12px 40px}
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .stat b{font-size:18px}
+    .name{font-size:15.5px}
+    .desc{-webkit-line-clamp:4}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<div id="topSentinel" aria-hidden="true" style="height:1px"></div>
+
+  <header>
+    <div class="badge"><i></i>抖音 · AI 内容号 · 2026</div>
+    <h1>国风、古人与<span class="grad">人间</span></h1>
+    <p class="sub">
+      38 个「AI 生成画面 + 原创叙事」的内容号，7 条赛道。
+      不含工具测评、小说推文、漫剧改编、短剧切片与卖课账号。点头像直达抖音主页。
+    </p>
+
+    <div class="stats">
+      <div class="stat" style="--sc:#e11d48"><b>38</b><span>账号</span></div>
+      <div class="stat" style="--sc:#059669"><b>7</b><span>赛道</span></div>
+      <div class="stat" style="--sc:#2563eb"><b>29</b><span>2026 数据已核实</span></div>
+      <div class="stat" style="--sc:#d97706"><b>9</b><span>公开数据待核</span></div>
+      <div class="stat" style="--sc:#7c3aed"><b>245万</b><span>最高单账号粉丝</span></div>
+    </div>
+  </header>
+
+  <section class="toolbar">
+    <div class="bar-top">
+      <div class="bar-title">按赛道筛选</div>
+      <div class="bar-count">当前显示 <b id="visible">38</b> / 38</div>
+    </div>
+    <nav class="filterbar" id="filters" aria-label="赛道筛选"><button class="chip" data-track="all" aria-pressed="true" style="--sw:#e11d48;--sw-d:#be123c">全部<span class="n">38</span></button><button class="chip" data-track="guofeng" aria-pressed="false" style="--sw:#10b981;--sw-d:#047857"><i class="sw"></i>国风志怪<span class="n">5</span></button><button class="chip" data-track="history" aria-pressed="false" style="--sw:#f59e0b;--sw-d:#b45309"><i class="sw"></i>人文历史<span class="n">6</span></button><button class="chip" data-track="emotion" aria-pressed="false" style="--sw:#f43f5e;--sw-d:#be123c"><i class="sw"></i>情感情景<span class="n">7</span></button><button class="chip" data-track="satire" aria-pressed="false" style="--sw:#3b82f6;--sw-d:#1d4ed8"><i class="sw"></i>现实讽刺<span class="n">2</span></button><button class="chip" data-track="mystery" aria-pressed="false" style="--sw:#8b5cf6;--sw-d:#6d28d9"><i class="sw"></i>悬疑怪谈<span class="n">7</span></button><button class="chip" data-track="pet" aria-pressed="false" style="--sw:#f97316;--sw-d:#c2410c"><i class="sw"></i>宠物 IP<span class="n">7</span></button><button class="chip" data-track="youth" aria-pressed="false" style="--sw:#ec4899;--sw-d:#be185d"><i class="sw"></i>青春女性<span class="n">4</span></button></nav>
+    <div class="distbar" aria-hidden="true"><span style="flex:5;background:#10b981" title="国风志怪 5 个"></span><span style="flex:6;background:#f59e0b" title="人文历史 6 个"></span><span style="flex:7;background:#f43f5e" title="情感情景 7 个"></span><span style="flex:2;background:#3b82f6" title="现实讽刺 2 个"></span><span style="flex:7;background:#8b5cf6" title="悬疑怪谈 7 个"></span><span style="flex:7;background:#f97316" title="宠物 IP 7 个"></span><span style="flex:4;background:#ec4899" title="青春女性 4 个"></span></div>
+    <div class="hotline">
+      <span class="k">热点题材</span>
+      <span class="hot">性别反转 <b>2.7 亿</b>播放</span>
+      <span class="hot">「辣弟」相关 <b>11.3 亿</b></span>
+      <span class="hot">主播二创大赛 <b>789 亿</b></span>
+    </div>
+  </section>
+
+  <main class="grid" id="grid">
+<article class="card" data-track="guofeng" style="--tc:#10b981;--tc-d:#047857;--tc-l:#6ee7b7;--tc-tint:#ecfdf5;--tc-b:rgba(16,185,129,.28);--tc-s:rgba(16,185,129,.45)">
+      <div class="top">
+        <a class="avatar" href="https://v.douyin.com/n82_VZ-1p_g/" target="_blank" rel="noopener noreferrer" title="打开「古卷残灯」"><span aria-hidden="true">古</span></a>
+        <div class="ident">
+          <a class="name" href="https://v.douyin.com/n82_VZ-1p_g/" target="_blank" rel="noopener noreferrer">古卷残灯</a>
+          <div class="meta">
+            <span class="tag">国风志怪</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow" href="https://v.douyin.com/n82_VZ-1p_g/" target="_blank" rel="noopener noreferrer"
+           title="打开抖音主页"
+           aria-label="打开抖音主页">↗</a>
+      </div>
+      <p class="desc">以聊斋志异为母体，一条讲一个妖鬼故事。冷绿调、灯笼、雨夜、破庙，成了这个赛道的视觉方言。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>妖怪不是吓人的，是委屈的——每个妖物都有一句没说完的话。</p>
+        <p>雨夜冷绿的固定视觉，三秒就知道是谁。</p>
+      </div>
+      <div class="pills"><span class="pill"><strong>58 万</strong>粉丝</span><span class="pill">聊斋系列</span><span class="pill">精选+商单+收徒</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>男大学生 · 国风爱好者</b></span>
+      </div>
+    </article>
+<article class="card" data-track="guofeng" style="--tc:#10b981;--tc-d:#047857;--tc-l:#6ee7b7;--tc-tint:#ecfdf5;--tc-b:rgba(16,185,129,.28);--tc-s:rgba(16,185,129,.45)">
+      <div class="top">
+        <a class="avatar" href="https://v.douyin.com/RXAUKohqn00/" target="_blank" rel="noopener noreferrer" title="打开「浪歌漫剧社」"><span aria-hidden="true">浪</span></a>
+        <div class="ident">
+          <a class="name" href="https://v.douyin.com/RXAUKohqn00/" target="_blank" rel="noopener noreferrer">浪歌漫剧社</a>
+          <div class="meta">
+            <span class="tag">国风志怪</span>
+            <span class="flag"><i class="dot wait"></i>待核</span>
+          </div>
+        </div>
+        <a class="arrow" href="https://v.douyin.com/RXAUKohqn00/" target="_blank" rel="noopener noreferrer"
+           title="打开抖音主页"
+           aria-label="打开抖音主页">↗</a>
+      </div>
+      <p class="desc">聊斋系的漫剧化表达，比单条短片更偏系列与连载，人物关系会跨集延续。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>妖物能跨集活下来，观众追的是「这个妖后来怎样了」。</p>
+        <p>系列化把一条短片变成了连续剧。</p>
+      </div>
+      <div class="pills"><span class="pill">聊斋志异系列</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>男大学生 · 国风爱好者</b></span>
+      </div>
+    </article>
+<article class="card" data-track="guofeng" style="--tc:#10b981;--tc-d:#047857;--tc-l:#6ee7b7;--tc-tint:#ecfdf5;--tc-b:rgba(16,185,129,.28);--tc-s:rgba(16,185,129,.45)">
+      <div class="top">
+        <a class="avatar" href="https://v.douyin.com/mJwrft3s_Fw/" target="_blank" rel="noopener noreferrer" title="打开「好英俊pro」"><span aria-hidden="true">好</span></a>
+        <div class="ident">
+          <a class="name" href="https://v.douyin.com/mJwrft3s_Fw/" target="_blank" rel="noopener noreferrer">好英俊pro</a>
+          <div class="meta">
+            <span class="tag">国风志怪</span>
+            <span class="flag"><i class="dot wait"></i>待核</span>
+          </div>
+        </div>
+        <a class="arrow" href="https://v.douyin.com/mJwrft3s_Fw/" target="_blank" rel="noopener noreferrer"
+           title="打开抖音主页"
+           aria-label="打开抖音主页">↗</a>
+      </div>
+      <p class="desc">古代奇异史，走「志怪笔记 + 演绎」的混合形态，比纯聊斋更偏野史与奇闻。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>正史不写的怪事，用野史笔记的口吻讲出来。</p>
+        <p>冷知识密度高，容易截图转发。</p>
+      </div>
+      <div class="pills"><span class="pill">古代奇异史</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>男大学生 · 泛历史</b></span>
+      </div>
+    </article>
+<article class="card" data-track="guofeng" style="--tc:#10b981;--tc-d:#047857;--tc-l:#6ee7b7;--tc-tint:#ecfdf5;--tc-b:rgba(16,185,129,.28);--tc-s:rgba(16,185,129,.45)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/%E9%98%BF%E7%9B%90" target="_blank" rel="noopener noreferrer" title="打开「阿盐」"><span aria-hidden="true">盐</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/%E9%98%BF%E7%9B%90" target="_blank" rel="noopener noreferrer">阿盐</a>
+          <div class="meta">
+            <span class="tag">国风志怪</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/%E9%98%BF%E7%9B%90" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">21 分钟 AI 玄幻长片《穿越山海经》，一个人完成，把国民 IP 拍成了电影质感的短长片。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>21 分钟山海经长片，一个人全流程做完。</p>
+        <p>国民 IP + 长片耐力，看完就是赚到。</p>
+      </div>
+      <div class="pills"><span class="pill">《穿越山海经》</span><span class="pill">单条 304 万赞</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>男大学生 · 国风爱好者</b></span>
+      </div>
+    </article>
+<article class="card" data-track="guofeng" style="--tc:#10b981;--tc-d:#047857;--tc-l:#6ee7b7;--tc-tint:#ecfdf5;--tc-b:rgba(16,185,129,.28);--tc-s:rgba(16,185,129,.45)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/%E5%91%BD%E6%AF%94%E6%A2%A6%E9%95%BF" target="_blank" rel="noopener noreferrer" title="打开「命比梦长」"><span aria-hidden="true">命</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/%E5%91%BD%E6%AF%94%E6%A2%A6%E9%95%BF" target="_blank" rel="noopener noreferrer">命比梦长</a>
+          <div class="meta">
+            <span class="tag">国风志怪</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/%E5%91%BD%E6%AF%94%E6%A2%A6%E9%95%BF" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">中式机械朋克《万物生》——隋朝 × 机械 × 修真，剧本拆段、成员分镜、本人剪辑的「一个人的剧组」。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>隋朝 + 机械 + 修真，这个混搭以前没人做过。</p>
+        <p>电影级美术，弹幕在替导演拆世界观。</p>
+      </div>
+      <div class="pills"><span class="pill">《万物生》</span><span class="pill">两集 7500 万播放</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>男大学生 · 硬核设定党</b></span>
+      </div>
+    </article>
+<article class="card" data-track="history" style="--tc:#f59e0b;--tc-d:#b45309;--tc-l:#fcd34d;--tc-tint:#fffbeb;--tc-b:rgba(245,158,11,.30);--tc-s:rgba(245,158,11,.45)">
+      <div class="top">
+        <a class="avatar" href="https://v.douyin.com/Ak_bbdbh12M/" target="_blank" rel="noopener noreferrer" title="打开「哈喽TERRY」"><span aria-hidden="true">T</span></a>
+        <div class="ident">
+          <a class="name" href="https://v.douyin.com/Ak_bbdbh12M/" target="_blank" rel="noopener noreferrer">哈喽TERRY</a>
+          <div class="meta">
+            <span class="tag">人文历史</span>
+            <span class="flag"><i class="dot wait"></i>待核</span>
+          </div>
+        </div>
+        <a class="arrow" href="https://v.douyin.com/Ak_bbdbh12M/" target="_blank" rel="noopener noreferrer"
+           title="打开抖音主页"
+           aria-label="打开抖音主页">↗</a>
+      </div>
+      <p class="desc">一位古代人物的传记式短片，用旁白串起他一生里最关键的几个转折。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>不拍伟业，专拍一个人最狼狈的那一年。</p>
+        <p>看完像读完一篇人物小传，有回味。</p>
+      </div>
+      <div class="pills"><span class="pill">古代人物传</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>中学生 · 大学生 · 泛大众</b></span>
+      </div>
+    </article>
+<article class="card" data-track="history" style="--tc:#f59e0b;--tc-d:#b45309;--tc-l:#fcd34d;--tc-tint:#fffbeb;--tc-b:rgba(245,158,11,.30);--tc-s:rgba(245,158,11,.45)">
+      <div class="top">
+        <a class="avatar" href="https://v.douyin.com/VFpOHGPRSsQ/" target="_blank" rel="noopener noreferrer" title="打开「青简客」"><span aria-hidden="true">青</span></a>
+        <div class="ident">
+          <a class="name" href="https://v.douyin.com/VFpOHGPRSsQ/" target="_blank" rel="noopener noreferrer">青简客</a>
+          <div class="meta">
+            <span class="tag">人文历史</span>
+            <span class="flag"><i class="dot wait"></i>待核</span>
+          </div>
+        </div>
+        <a class="arrow" href="https://v.douyin.com/VFpOHGPRSsQ/" target="_blank" rel="noopener noreferrer"
+           title="打开抖音主页"
+           aria-label="打开抖音主页">↗</a>
+      </div>
+      <p class="desc">用 AI 复原历史场景与人物，偏知识向，画面服务于「讲清楚」而不是「炫技」。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>把课本里的一句话，还原成能看见的一场戏。</p>
+        <p>知识增量明确——「原来是这样」。</p>
+      </div>
+      <div class="pills"><span class="pill">AI 打开人文历史</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>中学生 · 大学生 · 泛大众</b></span>
+      </div>
+    </article>
+<article class="card" data-track="history" style="--tc:#f59e0b;--tc-d:#b45309;--tc-l:#fcd34d;--tc-tint:#fffbeb;--tc-b:rgba(245,158,11,.30);--tc-s:rgba(245,158,11,.45)">
+      <div class="top">
+        <a class="avatar" href="https://v.douyin.com/4S4NOtVFylg/" target="_blank" rel="noopener noreferrer" title="打开「饿馒头」"><span aria-hidden="true">饿</span></a>
+        <div class="ident">
+          <a class="name" href="https://v.douyin.com/4S4NOtVFylg/" target="_blank" rel="noopener noreferrer">饿馒头</a>
+          <div class="meta">
+            <span class="tag">人文历史</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow" href="https://v.douyin.com/4S4NOtVFylg/" target="_blank" rel="noopener noreferrer"
+           title="打开抖音主页"
+           aria-label="打开抖音主页">↗</a>
+      </div>
+      <p class="desc">让世界名画动起来。2019 年就有这个脑洞，直到 2024 年 AI 成熟才真正跑起来。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>名画里的人是活的——会眨眼、会转头、会走出画框。</p>
+        <p>公共记忆 + 认知反差，谁都想看一眼。</p>
+      </div>
+      <div class="pills"><span class="pill">名画活化</span><span class="pill">35.8 万/条</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>泛大众 · 中学生 · 艺术爱好者</b></span>
+      </div>
+    </article>
+<article class="card" data-track="history" style="--tc:#f59e0b;--tc-d:#b45309;--tc-l:#fcd34d;--tc-tint:#fffbeb;--tc-b:rgba(245,158,11,.30);--tc-s:rgba(245,158,11,.45)">
+      <div class="top">
+        <a class="avatar" href="https://v.douyin.com/wfeEVeAwppo/" target="_blank" rel="noopener noreferrer" title="打开「喆FILM」"><span aria-hidden="true">喆</span></a>
+        <div class="ident">
+          <a class="name" href="https://v.douyin.com/wfeEVeAwppo/" target="_blank" rel="noopener noreferrer">喆FILM</a>
+          <div class="meta">
+            <span class="tag">人文历史</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow" href="https://v.douyin.com/wfeEVeAwppo/" target="_blank" rel="noopener noreferrer"
+           title="打开抖音主页"
+           aria-label="打开抖音主页">↗</a>
+      </div>
+      <p class="desc">古人说唱。杜甫唱租房、苏轼唱漂泊、刘邦唱大器晚成，核心受众其实是 31–40 岁。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>让杜甫唱租房——古人替你说出不敢说的那句话。</p>
+        <p>说唱节奏 + 金句，能被当文案二次传播。</p>
+      </div>
+      <div class="pills"><span class="pill">《过来人》</span><span class="pill">全网 1.24 亿</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>31–40 岁职场 · 泛大众</b></span>
+      </div>
+    </article>
+<article class="card" data-track="history" style="--tc:#f59e0b;--tc-d:#b45309;--tc-l:#fcd34d;--tc-tint:#fffbeb;--tc-b:rgba(245,158,11,.30);--tc-s:rgba(245,158,11,.45)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/%E5%A4%A7%E5%9C%86%E9%95%9C%E7%A7%91%E6%99%AE" target="_blank" rel="noopener noreferrer" title="打开「大圆镜科普」"><span aria-hidden="true">镜</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/%E5%A4%A7%E5%9C%86%E9%95%9C%E7%A7%91%E6%99%AE" target="_blank" rel="noopener noreferrer">大圆镜科普</a>
+          <div class="meta">
+            <span class="tag">人文历史</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/%E5%A4%A7%E5%9C%86%E9%95%9C%E7%A7%91%E6%99%AE" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">把科学史拍成影像：免疫、大脑、宇宙。20 人团队，一条 7 分钟片约 200 个镜头。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>7 分钟从 19 世纪穿到未来，课本从来没这么好看。</p>
+        <p>AI 冷静配音反而更好听，观众集体要求别换真人。</p>
+      </div>
+      <div class="pills"><span class="pill"><strong>200 万+</strong>粉丝</span><span class="pill">《免疫的阴影》</span><span class="pill">单条 3600 万播放</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>中学生 · 大学生 · 泛大众</b></span>
+      </div>
+    </article>
+<article class="card" data-track="history" style="--tc:#f59e0b;--tc-d:#b45309;--tc-l:#fcd34d;--tc-tint:#fffbeb;--tc-b:rgba(245,158,11,.30);--tc-s:rgba(245,158,11,.45)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/%E9%BC%BB%E5%AD%90%E4%B8%8A%E7%9A%84%E8%9A%82%E8%9A%81" target="_blank" rel="noopener noreferrer" title="打开「鼻子上的蚂蚁」"><span aria-hidden="true">俑</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/%E9%BC%BB%E5%AD%90%E4%B8%8A%E7%9A%84%E8%9A%82%E8%9A%81" target="_blank" rel="noopener noreferrer">鼻子上的蚂蚁</a>
+          <div class="meta">
+            <span class="tag">人文历史</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/%E9%BC%BB%E5%AD%90%E4%B8%8A%E7%9A%84%E8%9A%82%E8%9A%81" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">《俑哥进城记》——让兵马俑开口，讲两千年前普通人的一生。作者明确不收费、不卖课、不接广告。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>让兵马俑说人话：「秦人站着挣钱」。</p>
+        <p>文化认同打底，看完想订一张去西安的票。</p>
+      </div>
+      <div class="pills"><span class="pill">《俑哥进城记》</span><span class="pill">单集 1200 万播放</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>中老年 · 文旅人群 · 泛大众</b></span>
+      </div>
+    </article>
+<article class="card" data-track="emotion" style="--tc:#f43f5e;--tc-d:#be123c;--tc-l:#fda4af;--tc-tint:#fff1f2;--tc-b:rgba(244,63,94,.26);--tc-s:rgba(244,63,94,.42)">
+      <div class="top">
+        <a class="avatar" href="https://v.douyin.com/CreP8bd3_54/" target="_blank" rel="noopener noreferrer" title="打开「旧梦留声机」"><span aria-hidden="true">旧</span></a>
+        <div class="ident">
+          <a class="name" href="https://v.douyin.com/CreP8bd3_54/" target="_blank" rel="noopener noreferrer">旧梦留声机</a>
+          <div class="meta">
+            <span class="tag">情感情景</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow" href="https://v.douyin.com/CreP8bd3_54/" target="_blank" rel="noopener noreferrer"
+           title="打开抖音主页"
+           aria-label="打开抖音主页">↗</a>
+      </div>
+      <p class="desc">原创情感情景短片，走失、亲情、重逢。靠一个具体物件把情绪顶上去，不说教。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>一个具体物件，装一次没说出口的告别。</p>
+        <p>三分钟一个完整情绪弧，看完想给家里打电话。</p>
+      </div>
+      <div class="pills"><span class="pill">《宝贝回家》</span><span class="pill">单条 823 万赞</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>泛大众 · 女大学生 · 中老年</b></span>
+      </div>
+    </article>
+<article class="card" data-track="emotion" style="--tc:#f43f5e;--tc-d:#be123c;--tc-l:#fda4af;--tc-tint:#fff1f2;--tc-b:rgba(244,63,94,.26);--tc-s:rgba(244,63,94,.42)">
+      <div class="top">
+        <a class="avatar" href="https://v.douyin.com/4kHeljSi9Z4/" target="_blank" rel="noopener noreferrer" title="打开「站立起来的影子」"><span aria-hidden="true">站</span></a>
+        <div class="ident">
+          <a class="name" href="https://v.douyin.com/4kHeljSi9Z4/" target="_blank" rel="noopener noreferrer">站立起来的影子</a>
+          <div class="meta">
+            <span class="tag">情感情景</span>
+            <span class="flag"><i class="dot wait"></i>待核</span>
+          </div>
+        </div>
+        <a class="arrow" href="https://v.douyin.com/4kHeljSi9Z4/" target="_blank" rel="noopener noreferrer"
+           title="打开抖音主页"
+           aria-label="打开抖音主页">↗</a>
+      </div>
+      <p class="desc">生活切片式的情景短片，不做强冲突，靠一个瞬间的留白让人心里一沉。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>不解释、不煽情，只给你一个生活切片。</p>
+        <p>留白足够大，评论区自己补故事。</p>
+      </div>
+      <div class="pills"><span class="pill">情景短片</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>泛大众 · 女大学生</b></span>
+      </div>
+    </article>
+<article class="card" data-track="emotion" style="--tc:#f43f5e;--tc-d:#be123c;--tc-l:#fda4af;--tc-tint:#fff1f2;--tc-b:rgba(244,63,94,.26);--tc-s:rgba(244,63,94,.42)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/%E5%88%AB%E9%97%B9%E4%BA%86%E8%B1%86%E5%88%A8" target="_blank" rel="noopener noreferrer" title="打开「别闹了豆刨」"><span aria-hidden="true">豆</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/%E5%88%AB%E9%97%B9%E4%BA%86%E8%B1%86%E5%88%A8" target="_blank" rel="noopener noreferrer">别闹了豆刨</a>
+          <div class="meta">
+            <span class="tag">情感情景</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/%E5%88%AB%E9%97%B9%E4%BA%86%E8%B1%86%E5%88%A8" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">《别闹了法姥》——72 岁毒舌姥姥 + 一家四口在 H 国。把 AI 奶奶金句升级成了 AI 情景喜剧。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>这个姥姥一点「妈味」都没有，还天天带你玩梗。</p>
+        <p>一家人斗嘴，广告位天生长在客厅。</p>
+      </div>
+      <div class="pills"><span class="pill"><strong>169 万</strong>粉丝</span><span class="pill">《别闹了法姥》</span><span class="pill">单条广告 20 万</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>大学生 · 年轻女性</b></span>
+      </div>
+    </article>
+<article class="card" data-track="emotion" style="--tc:#f43f5e;--tc-d:#be123c;--tc-l:#fda4af;--tc-tint:#fff1f2;--tc-b:rgba(244,63,94,.26);--tc-s:rgba(244,63,94,.42)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/WAI-%E4%BD%A0%E5%90%AC" target="_blank" rel="noopener noreferrer" title="打开「WAI-你听」"><span aria-hidden="true">W</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/WAI-%E4%BD%A0%E5%90%AC" target="_blank" rel="noopener noreferrer">WAI-你听</a>
+          <div class="meta">
+            <span class="tag">情感情景</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/WAI-%E4%BD%A0%E5%90%AC" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">《纸手机》——小男孩攒 15 块钱买纸手机，想给去世的奶奶打一通视频电话。全片只有纸手机是实拍。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>15 块买部纸手机，给去世的奶奶打个视频。</p>
+        <p>3 天做完，2 天破千万，央视和人民日报都转了。</p>
+      </div>
+      <div class="pills"><span class="pill">《纸手机》</span><span class="pill">抖音 176 万赞</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>泛大众</b></span>
+      </div>
+    </article>
+<article class="card" data-track="emotion" style="--tc:#f43f5e;--tc-d:#be123c;--tc-l:#fda4af;--tc-tint:#fff1f2;--tc-b:rgba(244,63,94,.26);--tc-s:rgba(244,63,94,.42)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/%E9%93%B6%E6%B2%B3%E6%97%85%E4%BA%BA" target="_blank" rel="noopener noreferrer" title="打开「银河旅人」"><span aria-hidden="true">银</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/%E9%93%B6%E6%B2%B3%E6%97%85%E4%BA%BA" target="_blank" rel="noopener noreferrer">银河旅人</a>
+          <div class="meta">
+            <span class="tag">情感情景</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/%E9%93%B6%E6%B2%B3%E6%97%85%E4%BA%BA" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">《饭还热着》——留守儿童的一顿饭，讲友情与亲情。没有反转，只有细节。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>留守儿童的一顿饭，还热着。</p>
+        <p>不煽情，靠一个细节把人看哭。</p>
+      </div>
+      <div class="pills"><span class="pill">《饭还热着》</span><span class="pill">单条 397 万赞</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>泛大众 · 中老年</b></span>
+      </div>
+    </article>
+<article class="card" data-track="emotion" style="--tc:#f43f5e;--tc-d:#be123c;--tc-l:#fda4af;--tc-tint:#fff1f2;--tc-b:rgba(244,63,94,.26);--tc-s:rgba(244,63,94,.42)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/%E5%B8%83%E9%B2%81%E6%96%AF%EF%BC%88%E8%87%AA%E5%BE%8B%E7%89%88%EF%BC%89" target="_blank" rel="noopener noreferrer" title="打开「布鲁斯（自律版）」"><span aria-hidden="true">布</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/%E5%B8%83%E9%B2%81%E6%96%AF%EF%BC%88%E8%87%AA%E5%BE%8B%E7%89%88%EF%BC%89" target="_blank" rel="noopener noreferrer">布鲁斯（自律版）</a>
+          <div class="meta">
+            <span class="tag">情感情景</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/%E5%B8%83%E9%B2%81%E6%96%AF%EF%BC%88%E8%87%AA%E5%BE%8B%E7%89%88%EF%BC%89" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">把男主播性转成「陈美泽」的创作者。《屯里有佳人》5 集 5331 万播放，首集 1800 万，一个月涨粉 10 万。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>把男主播性转成东北村花，越离谱越忍不住看。</p>
+        <p>性转 + 乡村爱情，剧情密度高到「不敢开倍速」。</p>
+      </div>
+      <div class="pills"><span class="pill">《屯里有佳人》</span><span class="pill">首集 1800 万播放</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>18–23 岁 · 泛二次元</b></span>
+      </div>
+    </article>
+<article class="card" data-track="emotion" style="--tc:#f43f5e;--tc-d:#be123c;--tc-l:#fda4af;--tc-tint:#fff1f2;--tc-b:rgba(244,63,94,.26);--tc-s:rgba(244,63,94,.42)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/%E5%93%9E%E5%93%9Eai%E6%BC%AB%E5%89%A7" target="_blank" rel="noopener noreferrer" title="打开「哞哞ai漫剧」"><span aria-hidden="true">哞</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/%E5%93%9E%E5%93%9Eai%E6%BC%AB%E5%89%A7" target="_blank" rel="noopener noreferrer">哞哞ai漫剧</a>
+          <div class="meta">
+            <span class="tag">情感情景</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/%E5%93%9E%E5%93%9Eai%E6%BC%AB%E5%89%A7" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">用主播的脸拍校园偶像剧。《流星花园》版陈美泽，单条 32.6 万赞；主要收益其实来自承制。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>用主播的脸拍校园偶像剧，粉丝自己找梗。</p>
+        <p>主播梗 + 名场面，互动率极高。</p>
+      </div>
+      <div class="pills"><span class="pill">陈美泽校园系列</span><span class="pill">单条 32.6 万赞</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>18–23 岁 · 主播粉丝</b></span>
+      </div>
+    </article>
+<article class="card" data-track="satire" style="--tc:#3b82f6;--tc-d:#1d4ed8;--tc-l:#93c5fd;--tc-tint:#eff6ff;--tc-b:rgba(59,130,246,.26);--tc-s:rgba(59,130,246,.42)">
+      <div class="top">
+        <a class="avatar" href="https://v.douyin.com/py_0V-wdXRk/" target="_blank" rel="noopener noreferrer" title="打开「动画很忙」"><span aria-hidden="true">动</span></a>
+        <div class="ident">
+          <a class="name" href="https://v.douyin.com/py_0V-wdXRk/" target="_blank" rel="noopener noreferrer">动画很忙</a>
+          <div class="meta">
+            <span class="tag">现实讽刺</span>
+            <span class="flag"><i class="dot wait"></i>待核</span>
+          </div>
+        </div>
+        <a class="arrow" href="https://v.douyin.com/py_0V-wdXRk/" target="_blank" rel="noopener noreferrer"
+           title="打开抖音主页"
+           aria-label="打开抖音主页">↗</a>
+      </div>
+      <p class="desc">用动画短剧戳当代生活痛点——职场、房价、婚恋，把吐槽做成可视化的荒诞。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>把「加班到凌晨」画成荒诞动画，替打工人骂出来。</p>
+        <p>痛点共鸣 + 可截图的金句。</p>
+      </div>
+      <div class="pills"><span class="pill">现代社会痛点</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>职场青年 · 大学生</b></span>
+      </div>
+    </article>
+<article class="card" data-track="satire" style="--tc:#3b82f6;--tc-d:#1d4ed8;--tc-l:#93c5fd;--tc-tint:#eff6ff;--tc-b:rgba(59,130,246,.26);--tc-s:rgba(59,130,246,.42)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/%E5%B0%8F%E6%98%8EMINJA" target="_blank" rel="noopener noreferrer" title="打开「小明MINJA」"><span aria-hidden="true">明</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/%E5%B0%8F%E6%98%8EMINJA" target="_blank" rel="noopener noreferrer">小明MINJA</a>
+          <div class="meta">
+            <span class="tag">现实讽刺</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/%E5%B0%8F%E6%98%8EMINJA" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">《当我用AI纪录片还原东京失控那天》——电车里麻木的上班族、便利店空洞的微笑，最后男孩盯着镜头笑。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>把一座城市的麻木拍成纪录片，最后那个笑是给观众的。</p>
+        <p>社会隐喻，越看越冷，越冷越想转。</p>
+      </div>
+      <div class="pills"><span class="pill">《东京失控那天》</span><span class="pill">小红书 20 万赞</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>文艺青年 · 女大学生</b></span>
+      </div>
+    </article>
+<article class="card" data-track="mystery" style="--tc:#8b5cf6;--tc-d:#6d28d9;--tc-l:#c4b5fd;--tc-tint:#f5f3ff;--tc-b:rgba(139,92,246,.26);--tc-s:rgba(139,92,246,.42)">
+      <div class="top">
+        <a class="avatar" href="https://v.douyin.com/FHta9AIiCik/" target="_blank" rel="noopener noreferrer" title="打开「不困」"><span aria-hidden="true">不</span></a>
+        <div class="ident">
+          <a class="name" href="https://v.douyin.com/FHta9AIiCik/" target="_blank" rel="noopener noreferrer">不困</a>
+          <div class="meta">
+            <span class="tag">悬疑怪谈</span>
+            <span class="flag"><i class="dot wait"></i>待核</span>
+          </div>
+        </div>
+        <a class="arrow" href="https://v.douyin.com/FHta9AIiCik/" target="_blank" rel="noopener noreferrer"
+           title="打开抖音主页"
+           aria-label="打开抖音主页">↗</a>
+      </div>
+      <p class="desc">规则怪谈。靠「未知规则 + 诡异氛围」拉完播，每集结尾留一个强钩子。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>先给你一条不能违反的规则，然后看着主角违反。</p>
+        <p>悬念拉着人看完，结尾必留钩。</p>
+      </div>
+      <div class="pills"><span class="pill">规则怪谈</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>男大学生 · Z 世代</b></span>
+      </div>
+    </article>
+<article class="card" data-track="mystery" style="--tc:#8b5cf6;--tc-d:#6d28d9;--tc-l:#c4b5fd;--tc-tint:#f5f3ff;--tc-b:rgba(139,92,246,.26);--tc-s:rgba(139,92,246,.42)">
+      <div class="top">
+        <a class="avatar" href="https://v.douyin.com/mV5cFi6P1ks/" target="_blank" rel="noopener noreferrer" title="打开「毛哥AI叨叨」"><span aria-hidden="true">毛</span></a>
+        <div class="ident">
+          <a class="name" href="https://v.douyin.com/mV5cFi6P1ks/" target="_blank" rel="noopener noreferrer">毛哥AI叨叨</a>
+          <div class="meta">
+            <span class="tag">悬疑怪谈</span>
+            <span class="flag"><i class="dot wait"></i>待核</span>
+          </div>
+        </div>
+        <a class="arrow" href="https://v.douyin.com/mV5cFi6P1ks/" target="_blank" rel="noopener noreferrer"
+           title="打开抖音主页"
+           aria-label="打开抖音主页">↗</a>
+      </div>
+      <p class="desc">自建 IP 的悬疑剧，人物关系跨集推进，比单条怪谈更接近「剧」。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>一个能连载的悬疑人物，每集只揭开他的一层。</p>
+        <p>追的不是案子，是「他到底是谁」。</p>
+      </div>
+      <div class="pills"><span class="pill">自制 IP 悬疑</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>男大学生 · 悬疑爱好者</b></span>
+      </div>
+    </article>
+<article class="card" data-track="mystery" style="--tc:#8b5cf6;--tc-d:#6d28d9;--tc-l:#c4b5fd;--tc-tint:#f5f3ff;--tc-b:rgba(139,92,246,.26);--tc-s:rgba(139,92,246,.42)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/%E7%99%BD%E8%A2%8B%E5%AD%90" target="_blank" rel="noopener noreferrer" title="打开「白袋子」"><span aria-hidden="true">白</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/%E7%99%BD%E8%A2%8B%E5%AD%90" target="_blank" rel="noopener noreferrer">白袋子</a>
+          <div class="meta">
+            <span class="tag">悬疑怪谈</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/%E7%99%BD%E8%A2%8B%E5%AD%90" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">《零号档案》——地铁站、住宅楼、隧道里裂开黑色「门」，物理法则失效，零号部门负责封锁与收容。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>地铁站裂开一道「门」，走进物理法则失效的地方。</p>
+        <p>SCP 式世界观 + 电影级画质，4 集 1.1 亿播放。</p>
+      </div>
+      <div class="pills"><span class="pill">《零号档案》</span><span class="pill">4 集 1.1 亿播放</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>男大学生 · Z 世代</b></span>
+      </div>
+    </article>
+<article class="card" data-track="mystery" style="--tc:#8b5cf6;--tc-d:#6d28d9;--tc-l:#c4b5fd;--tc-tint:#f5f3ff;--tc-b:rgba(139,92,246,.26);--tc-s:rgba(139,92,246,.42)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/%E6%A4%BF%E9%87%8E%20CHunye" target="_blank" rel="noopener noreferrer" title="打开「椿野 CHunye」"><span aria-hidden="true">椿</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/%E6%A4%BF%E9%87%8E%20CHunye" target="_blank" rel="noopener noreferrer">椿野 CHunye</a>
+          <div class="meta">
+            <span class="tag">悬疑怪谈</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/%E6%A4%BF%E9%87%8E%20CHunye" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">《渡骸》——日本深海打捞起一具钉满符咒的中式棺木，僵尸从码头蔓延到地铁站。大四学生一个人做的。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>中式僵尸从日本深海被打捞上来。</p>
+        <p>电影级质感，B站单集 93.5 万。</p>
+      </div>
+      <div class="pills"><span class="pill">《渡骸》</span><span class="pill">全网近 8000 万</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>男大学生 · 恐怖片受众</b></span>
+      </div>
+    </article>
+<article class="card" data-track="mystery" style="--tc:#8b5cf6;--tc-d:#6d28d9;--tc-l:#c4b5fd;--tc-tint:#f5f3ff;--tc-b:rgba(139,92,246,.26);--tc-s:rgba(139,92,246,.42)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/%E7%BA%A2%E8%B1%86%E7%A8%80%E9%A5%AD%E4%B8%AD" target="_blank" rel="noopener noreferrer" title="打开「红豆稀饭中」"><span aria-hidden="true">红</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/%E7%BA%A2%E8%B1%86%E7%A8%80%E9%A5%AD%E4%B8%AD" target="_blank" rel="noopener noreferrer">红豆稀饭中</a>
+          <div class="meta">
+            <span class="tag">悬疑怪谈</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/%E7%BA%A2%E8%B1%86%E7%A8%80%E9%A5%AD%E4%B8%AD" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">《我在现代当幽差》——地府打工人秦九，一集接引一个亡魂，用方言和市井气把生死讲轻了。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>地府也要打卡上班，一集接引一个亡魂。</p>
+        <p>7 分钟搞笑 1 分钟煽情，台词按秒表写。</p>
+      </div>
+      <div class="pills"><span class="pill">《我在现代当幽差》</span><span class="pill">3 集 1100 万</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>大学生 · B站用户</b></span>
+      </div>
+    </article>
+<article class="card" data-track="mystery" style="--tc:#8b5cf6;--tc-d:#6d28d9;--tc-l:#c4b5fd;--tc-tint:#f5f3ff;--tc-b:rgba(139,92,246,.26);--tc-s:rgba(139,92,246,.42)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/%E5%B7%A8%E6%9E%84ai" target="_blank" rel="noopener noreferrer" title="打开「巨构ai」"><span aria-hidden="true">巨</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/%E5%B7%A8%E6%9E%84ai" target="_blank" rel="noopener noreferrer">巨构ai</a>
+          <div class="meta">
+            <span class="tag">悬疑怪谈</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/%E5%B7%A8%E6%9E%84ai" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">只生成巨物场景：倒挂荒原、无底漩涡、高到看不见顶的巨像。配空灵 BGM，不做叙事。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>一望无际的倒挂荒原，高到看不见顶的巨像。</p>
+        <p>BGM 一响就安静，壁纸党狂喜。</p>
+      </div>
+      <div class="pills"><span class="pill"><strong>29 万</strong>粉丝</span><span class="pill">AI 巨物系列</span><span class="pill">B站一周涨粉 15 万</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>男大学生 · 二次元</b></span>
+      </div>
+    </article>
+<article class="card" data-track="mystery" style="--tc:#8b5cf6;--tc-d:#6d28d9;--tc-l:#c4b5fd;--tc-tint:#f5f3ff;--tc-b:rgba(139,92,246,.26);--tc-s:rgba(139,92,246,.42)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/%E5%9C%B0%E7%89%A2%E9%85%92%E9%A6%86" target="_blank" rel="noopener noreferrer" title="打开「地牢酒馆」"><span aria-hidden="true">地</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/%E5%9C%B0%E7%89%A2%E9%85%92%E9%A6%86" target="_blank" rel="noopener noreferrer">地牢酒馆</a>
+          <div class="meta">
+            <span class="tag">悬疑怪谈</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/%E5%9C%B0%E7%89%A2%E9%85%92%E9%A6%86" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">西幻地牢题材的连载短片，一集一个怪物、一场遭遇，靠氛围与美术取胜。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>西幻地牢里，一集一只怪物。</p>
+        <p>DND 受众的硬需求，真人内容几乎无法替代。</p>
+      </div>
+      <div class="pills"><span class="pill">《地牢酒馆》</span><span class="pill">一周涨粉 49 万</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>男大学生 · 西幻/DND</b></span>
+      </div>
+    </article>
+<article class="card" data-track="pet" style="--tc:#f97316;--tc-d:#c2410c;--tc-l:#fdba74;--tc-tint:#fff7ed;--tc-b:rgba(249,115,22,.28);--tc-s:rgba(249,115,22,.42)">
+      <div class="top">
+        <a class="avatar" href="https://v.douyin.com/noWhUqQKsFk/" target="_blank" rel="noopener noreferrer" title="打开「咪的妙脆角」"><span aria-hidden="true">咪</span></a>
+        <div class="ident">
+          <a class="name" href="https://v.douyin.com/noWhUqQKsFk/" target="_blank" rel="noopener noreferrer">咪的妙脆角</a>
+          <div class="meta">
+            <span class="tag">宠物 IP</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow" href="https://v.douyin.com/noWhUqQKsFk/" target="_blank" rel="noopener noreferrer"
+           title="打开抖音主页"
+           aria-label="打开抖音主页">↗</a>
+      </div>
+      <p class="desc">头顶妙脆角耳朵的狸花猫「猫师傅」，修玻璃、修自行车、修安检机，认真但总翻车。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>一只认真干活但总翻车的猫，替打工人演「努力了也没用」。</p>
+        <p>固定角色 + 每集新工种，看不腻。</p>
+      </div>
+      <div class="pills"><span class="pill"><strong>245 万</strong>粉丝</span><span class="pill">猫师傅修万物</span><span class="pill">单条 156 万赞</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>宝妈 · 大学生 · 泛大众</b></span>
+      </div>
+    </article>
+<article class="card" data-track="pet" style="--tc:#f97316;--tc-d:#c2410c;--tc-l:#fdba74;--tc-tint:#fff7ed;--tc-b:rgba(249,115,22,.28);--tc-s:rgba(249,115,22,.42)">
+      <div class="top">
+        <a class="avatar" href="https://v.douyin.com/EHoGQ3RjDrY/" target="_blank" rel="noopener noreferrer" title="打开「荒诞记录员」"><span aria-hidden="true">荒</span></a>
+        <div class="ident">
+          <a class="name" href="https://v.douyin.com/EHoGQ3RjDrY/" target="_blank" rel="noopener noreferrer">荒诞记录员</a>
+          <div class="meta">
+            <span class="tag">宠物 IP</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow" href="https://v.douyin.com/EHoGQ3RjDrY/" target="_blank" rel="noopener noreferrer"
+           title="打开抖音主页"
+           aria-label="打开抖音主页">↗</a>
+      </div>
+      <p class="desc">AI 猫咪以 vlog 形式过打工人生活：挤地铁、加班、摸鱼，被叫「电子嘴替」。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>猫替你去挤地铁、加班、摸鱼——你的电子嘴替。</p>
+        <p>日常陪伴感，评论区像同事群。</p>
+      </div>
+      <div class="pills"><span class="pill"><strong>78 万</strong>粉丝</span><span class="pill">AI 宠物 vlog</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>大学生 · 宝妈</b></span>
+      </div>
+    </article>
+<article class="card" data-track="pet" style="--tc:#f97316;--tc-d:#c2410c;--tc-l:#fdba74;--tc-tint:#fff7ed;--tc-b:rgba(249,115,22,.28);--tc-s:rgba(249,115,22,.42)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/%E8%83%96%E6%A9%98%E7%9A%84%E6%95%85%E4%BA%8B" target="_blank" rel="noopener noreferrer" title="打开「胖橘的故事」"><span aria-hidden="true">橘</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/%E8%83%96%E6%A9%98%E7%9A%84%E6%95%85%E4%BA%8B" target="_blank" rel="noopener noreferrer">胖橘的故事</a>
+          <div class="meta">
+            <span class="tag">宠物 IP</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/%E8%83%96%E6%A9%98%E7%9A%84%E6%95%85%E4%BA%8B" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">一只胖橘把日子过成了连续剧，已更新 103 集，是 AI 宠物剧里集数最长的之一。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>一只胖橘把日子过成了连续剧。</p>
+        <p>103 集 1.9 亿播放，越看越像自己。</p>
+      </div>
+      <div class="pills"><span class="pill">《胖橘的故事》</span><span class="pill">1.9 亿播放</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>宝妈 · 泛大众</b></span>
+      </div>
+    </article>
+<article class="card" data-track="pet" style="--tc:#f97316;--tc-d:#c2410c;--tc-l:#fdba74;--tc-tint:#fff7ed;--tc-b:rgba(249,115,22,.28);--tc-s:rgba(249,115,22,.42)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/AI%E7%8C%AB%E5%92%AA%E6%BC%94%E7%BB%8E%E4%BA%BA%E7%94%9F" target="_blank" rel="noopener noreferrer" title="打开「AI猫咪演绎人生」"><span aria-hidden="true">猫</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/AI%E7%8C%AB%E5%92%AA%E6%BC%94%E7%BB%8E%E4%BA%BA%E7%94%9F" target="_blank" rel="noopener noreferrer">AI猫咪演绎人生</a>
+          <div class="meta">
+            <span class="tag">宠物 IP</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/AI%E7%8C%AB%E5%92%AA%E6%BC%94%E7%BB%8E%E4%BA%BA%E7%94%9F" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">用猫演人的一生：上学、打工、结婚、变老。127 集，4.5 亿播放。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>让猫替人演完一生，从上学演到变老。</p>
+        <p>127 集 4.5 亿，最长寿的 AI 宠物剧。</p>
+      </div>
+      <div class="pills"><span class="pill">AI 猫咪人生系列</span><span class="pill">4.5 亿播放</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>宝妈 · 泛大众</b></span>
+      </div>
+    </article>
+<article class="card" data-track="pet" style="--tc:#f97316;--tc-d:#c2410c;--tc-l:#fdba74;--tc-tint:#fff7ed;--tc-b:rgba(249,115,22,.28);--tc-s:rgba(249,115,22,.42)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/%E7%8C%AB%E5%AD%90%E6%9F%92" target="_blank" rel="noopener noreferrer" title="打开「猫子柒」"><span aria-hidden="true">柒</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/%E7%8C%AB%E5%AD%90%E6%9F%92" target="_blank" rel="noopener noreferrer">猫子柒</a>
+          <div class="meta">
+            <span class="tag">宠物 IP</span>
+            <span class="flag"><i class="dot wait"></i>待核</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/%E7%8C%AB%E5%AD%90%E6%9F%92" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">猫版李子柒：白猫做饭、摆摊、扎染，橘猫在旁边偷吃闯祸，靠「猫设」和化学反应留住人。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>白猫干活，橘猫捣乱，一对固定搭档。</p>
+        <p>脚本比画面难，一条要做一到两天。</p>
+      </div>
+      <div class="pills"><span class="pill">猫版田园生活</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>宝妈 · 泛大众</b></span>
+      </div>
+    </article>
+<article class="card" data-track="pet" style="--tc:#f97316;--tc-d:#c2410c;--tc-l:#fdba74;--tc-tint:#fff7ed;--tc-b:rgba(249,115,22,.28);--tc-s:rgba(249,115,22,.42)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/%E4%BA%91%E5%92%AA%E5%96%B5%E7%94%9F%E5%93%B2%E5%AD%A6" target="_blank" rel="noopener noreferrer" title="打开「云咪喵生哲学」"><span aria-hidden="true">云</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/%E4%BA%91%E5%92%AA%E5%96%B5%E7%94%9F%E5%93%B2%E5%AD%A6" target="_blank" rel="noopener noreferrer">云咪喵生哲学</a>
+          <div class="meta">
+            <span class="tag">宠物 IP</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/%E4%BA%91%E5%92%AA%E5%96%B5%E7%94%9F%E5%93%B2%E5%AD%A6" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">猫拍打工 vlog，节奏舒缓、情绪钝感，卖的是陪伴而不是事件。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>猫也要挤地铁上班，日子过得比你稳。</p>
+        <p>陪伴感，不是事件感。</p>
+      </div>
+      <div class="pills"><span class="pill"><strong>24.8 万</strong>粉丝</span><span class="pill">猫咪打工 vlog</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>大学生 · 宝妈</b></span>
+      </div>
+    </article>
+<article class="card" data-track="pet" style="--tc:#f97316;--tc-d:#c2410c;--tc-l:#fdba74;--tc-tint:#fff7ed;--tc-b:rgba(249,115,22,.28);--tc-s:rgba(249,115,22,.42)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/%E5%B7%9D%E5%B2%9B%E5%B0%8F%E7%8C%AA" target="_blank" rel="noopener noreferrer" title="打开「川岛小猪」"><span aria-hidden="true">川</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/%E5%B7%9D%E5%B2%9B%E5%B0%8F%E7%8C%AA" target="_blank" rel="noopener noreferrer">川岛小猪</a>
+          <div class="meta">
+            <span class="tag">宠物 IP</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/%E5%B7%9D%E5%B2%9B%E5%B0%8F%E7%8C%AA" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">主打 AI 猫猫跳舞，单条最高 8.7 万赞，已接到肯德基、海底捞、全家等 8 笔商单。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>猫猫跳舞，一跳就是 8.7 万赞。</p>
+        <p>商单接到快餐三巨头，报价 4500 元/条。</p>
+      </div>
+      <div class="pills"><span class="pill">AI 萌宠跳舞</span><span class="pill">4500 元/条</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>宝妈 · 泛大众</b></span>
+      </div>
+    </article>
+<article class="card" data-track="youth" style="--tc:#ec4899;--tc-d:#be185d;--tc-l:#f9a8d4;--tc-tint:#fdf2f8;--tc-b:rgba(236,72,153,.26);--tc-s:rgba(236,72,153,.42)">
+      <div class="top">
+        <a class="avatar" href="https://v.douyin.com/bX1CWXPnd8U/" target="_blank" rel="noopener noreferrer" title="打开「Spongecake」"><span aria-hidden="true">S</span></a>
+        <div class="ident">
+          <a class="name" href="https://v.douyin.com/bX1CWXPnd8U/" target="_blank" rel="noopener noreferrer">Spongecake</a>
+          <div class="meta">
+            <span class="tag">青春女性</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow" href="https://v.douyin.com/bX1CWXPnd8U/" target="_blank" rel="noopener noreferrer"
+           title="打开抖音主页"
+           aria-label="打开抖音主页">↗</a>
+      </div>
+      <p class="desc">美高校园，怪胎与校花灵魂互换。明亮复古色调，卖的是「经济上行期的美」。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>校花与怪胎互换身体，满足「如果我是她」的代入。</p>
+        <p>明亮复古的校服与更衣室，纯视觉糖。</p>
+      </div>
+      <div class="pills"><span class="pill">《灵魂互换》</span><span class="pill">单集 1200 万</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>女大学生 · 年轻女性</b></span>
+      </div>
+    </article>
+<article class="card" data-track="youth" style="--tc:#ec4899;--tc-d:#be185d;--tc-l:#f9a8d4;--tc-tint:#fdf2f8;--tc-b:rgba(236,72,153,.26);--tc-s:rgba(236,72,153,.42)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/%E6%96%B9%E6%A1%83%E5%AD%90" target="_blank" rel="noopener noreferrer" title="打开「方桃子」"><span aria-hidden="true">桃</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/%E6%96%B9%E6%A1%83%E5%AD%90" target="_blank" rel="noopener noreferrer">方桃子</a>
+          <div class="meta">
+            <span class="tag">青春女性</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/%E6%96%B9%E6%A1%83%E5%AD%90" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">《被裁掉的女孩》女主：小镇女孩闯大城市、被裁、重新站上巴黎时装周。角色独立开号发日常。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>被裁掉的女孩，靠自己重新站上时装周。</p>
+        <p>女性观众 78%，角色能独立开号、接商单。</p>
+      </div>
+      <div class="pills"><span class="pill"><strong>41.8 万</strong>粉丝</span><span class="pill">《被裁掉的女孩》</span><span class="pill">报价 25.8 万</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>女大学生 · 职场新人</b></span>
+      </div>
+    </article>
+<article class="card" data-track="youth" style="--tc:#ec4899;--tc-d:#be185d;--tc-l:#f9a8d4;--tc-tint:#fdf2f8;--tc-b:rgba(236,72,153,.26);--tc-s:rgba(236,72,153,.42)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/%E9%B9%85%E5%A8%98%EF%BC%88ai%E5%9B%A2%E6%92%AD%E7%89%88%EF%BC%89" target="_blank" rel="noopener noreferrer" title="打开「鹅娘（ai团播版）」"><span aria-hidden="true">鹅</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/%E9%B9%85%E5%A8%98%EF%BC%88ai%E5%9B%A2%E6%92%AD%E7%89%88%EF%BC%89" target="_blank" rel="noopener noreferrer">鹅娘（ai团播版）</a>
+          <div class="meta">
+            <span class="tag">青春女性</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/%E9%B9%85%E5%A8%98%EF%BC%88ai%E5%9B%A2%E6%92%AD%E7%89%88%EF%BC%89" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">AI 女孩记录自己当团播小白的一天：早起喝咖啡、骑共享单车狂奔、化妆。观众知道她是 AI，还是追。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>AI 女孩当团播小白，早起赶地铁去上班。</p>
+        <p>生活感比逼真度更值钱。</p>
+      </div>
+      <div class="pills"><span class="pill"><strong>57.9 万</strong>粉丝</span><span class="pill">AI 团播 vlog</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>女大学生 · 下沉年轻</b></span>
+      </div>
+    </article>
+<article class="card" data-track="youth" style="--tc:#ec4899;--tc-d:#be185d;--tc-l:#f9a8d4;--tc-tint:#fdf2f8;--tc-b:rgba(236,72,153,.26);--tc-s:rgba(236,72,153,.42)">
+      <div class="top">
+        <a class="avatar" href="https://www.douyin.com/search/Yuri" target="_blank" rel="noopener noreferrer" title="打开「Yuri」"><span aria-hidden="true">Y</span></a>
+        <div class="ident">
+          <a class="name" href="https://www.douyin.com/search/Yuri" target="_blank" rel="noopener noreferrer">Yuri</a>
+          <div class="meta">
+            <span class="tag">青春女性</span>
+            <span class="flag"><i class="dot ok"></i>2026 已核实</span>
+          </div>
+        </div>
+        <a class="arrow is-search" href="https://www.douyin.com/search/Yuri" target="_blank" rel="noopener noreferrer"
+           title="在抖音搜索该账号"
+           aria-label="在抖音搜索该账号">搜</a>
+      </div>
+      <p class="desc">AI 原生歌手，从外形、歌曲到短视频几乎全部由 AI 生成，拿到全国首个虚拟偶像身份认证（编号 0001）。</p>
+      <div class="hook">
+        <div class="hook-h">为什么看得下去</div>
+        <p>一个不存在的歌手，拿了「数字居民」身份证。</p>
+        <p>出道 MV 135 万，The North Face 主动找上门。</p>
+      </div>
+      <div class="pills"><span class="pill"><strong>100 万+</strong>粉丝</span><span class="pill">《Surreal》</span><span class="pill">MV 135 万播放</span></div>
+      <div class="foot">
+        <span class="lab">面向</span>
+        <span class="aud"><b>女大学生 · 二次元</b></span>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    <b>数据口径</b>：粉丝量、播放、报价来自 2026 年公开报道（新榜、澎湃、西安晚报、游戏茶馆、雷科技、运营派等）。
+    标注「待核」的账号未查到 2026 年公开数据，留空不估算。<br />
+    <b>关于链接</b>：原 15 个账号使用短链直达主页；新增账号未取得主页短链，
+    点击跳转抖音站内搜索（按钮显示「搜」），在结果里选用户即可。<br />
+    <b>吸引点</b>：每条账号下的「为什么看得下去」为基于其内容定位与公开案例的判断，不是平台官方数据。<br />
+    <b>兼容性</b>：本页所有卡片已静态写入，即使浏览器禁用 JavaScript 也能完整浏览；筛选按钮需要 JS 支持。
+    <a class="backlink" href="#topSentinel">↑ 回到顶部</a>
+  </footer>
+</div>
+
+<button id="toTop" class="to-top" type="button" aria-label="回到顶部" title="回到顶部"><span class="ico" aria-hidden="true">↑</span><span>顶部</span></button>
+
+<script>
+(function () {
+  var grid = document.getElementById('grid');
+  var chips = document.querySelectorAll('.chip');
+  var vis = document.getElementById('visible');
+  var cards = grid ? grid.querySelectorAll('.card') : [];
+
+  for (var i = 0; i < chips.length; i++) {
+    chips[i].addEventListener('click', function () {
+      var track = this.getAttribute('data-track');
+      var shown = 0;
+      for (var j = 0; j < cards.length; j++) {
+        var hit = (track === 'all' || cards[j].getAttribute('data-track') === track);
+        cards[j].hidden = !hit;
+        if (hit) shown++;
+      }
+      for (var k = 0; k < chips.length; k++) {
+        chips[k].setAttribute('aria-pressed', String(chips[k] === this));
+      }
+      if (vis) vis.textContent = shown;
+    });
+  }
+})();
+</script>
+
+<script>
+(function () {
+  var btn = document.getElementById('toTop');
+  var sen = document.getElementById('topSentinel');
+  if (!btn) return;
+
+  /* 微信内置浏览器：底部工具条会挡住按钮，加类名抬高 */
+  if (/MicroMessenger/i.test(navigator.userAgent)) {
+    document.documentElement.className = (document.documentElement.className + ' wx').trim();
+  }
+  var raf = false;
+
+  function offset() {
+    var y = window.pageYOffset || 0;
+    if (!y && document.documentElement) { y = document.documentElement.scrollTop || 0; }
+    if (!y && document.body) { y = document.body.scrollTop || 0; }
+    if (sen && sen.getBoundingClientRect) {
+      var t = -sen.getBoundingClientRect().top;
+      if (t > y) { y = t; }
+    }
+    return y;
+  }
+
+  function apply() {
+    raf = false;
+    if (offset() > 320) { btn.classList.add('show'); }
+    else { btn.classList.remove('show'); }
+  }
+
+  function onScroll() {
+    if (raf) { return; }
+    raf = true;
+    if (window.requestAnimationFrame) { window.requestAnimationFrame(apply); }
+    else { setTimeout(apply, 60); }
+  }
+
+  /* capture=true：连内部滚动容器（预览器 / iframe）的 scroll 也能捕获 */
+  window.addEventListener('scroll', onScroll, true);
+  document.addEventListener('scroll', onScroll, true);
+  window.addEventListener('resize', onScroll, true);
+
+  btn.addEventListener('click', function () {
+    if (sen && sen.scrollIntoView) {
+      try { sen.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      catch (e) { sen.scrollIntoView(true); }
+    } else if ('scrollBehavior' in document.documentElement.style) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      window.scrollTo(0, 0);
+    }
+  });
+
+  apply();
+})();
+</script>
+</body>
+</html>
